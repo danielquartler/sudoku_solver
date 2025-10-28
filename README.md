@@ -21,5 +21,5 @@ Main Features:
 Technologies Used:  
 - OpenCV (image processing)  
 - NumPy  
-- ensorFlow (for digit classification)  
+- TensorFlow (for digit classification)  
 - Standard logic for solving
