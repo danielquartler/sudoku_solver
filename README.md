@@ -23,3 +23,7 @@ Technologies Used:
 - NumPy  
 - TensorFlow (for digit classification)  
 - Standard logic for solving
+
+Usage:  
+- Run sudoku_camera_app.py to launch the application. It uses your laptop’s camera to capture an image, extract the Sudoku puzzle, and solve it.  
+- Run sudoku_extractor_from_image.py if you prefer to load a Sudoku image from your computer and solve it directly.
