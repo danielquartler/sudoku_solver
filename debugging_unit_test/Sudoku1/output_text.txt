@@ -1,0 +1,42 @@
+C:\Users\danie\AppData\Local\Programs\Python\Python39\python.exe C:\Users\danie\Documents\Code\git_projects\sudoku_solver\sudoku_solver_app\sudoku_extractor_from_image.py 
+
+image_to_digit():
+[1, [array([0., 0., 0., 0., 0., 0., 0., 0., 0., 1.], dtype=float32)], np.int64(9)]
+[7, [array([0., 0., 0., 0., 0., 1., 0., 0., 0., 0.], dtype=float32)], np.int64(5)]
+[9, [array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(1)]
+[11, [array([0., 0., 0., 0., 0., 0., 1., 0., 0., 0.], dtype=float32)], np.int64(6)]
+[15, [array([0., 0., 0., 1., 0., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(3)]
+[17, [array([0., 0., 0., 0., 0., 0., 0., 1., 0., 0.], dtype=float32)], np.int64(7)]
+[19, [array([0., 0., 0., 0., 1., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(4)]
+[22, [array([0., 0., 0., 0., 0., 1., 0., 0., 0., 0.], dtype=float32)], np.int64(5)]
+[25, [array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(1)]
+[31, [array([0., 0., 0., 0., 1., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(4)]
+[38, [array([0., 0., 0., 0., 0., 0., 0., 1., 0., 0.], dtype=float32)], np.int64(7)]
+[39, [array([0., 0., 0., 0., 0., 0., 0., 0., 1., 0.], dtype=float32)], np.int64(8)]
+[41, [array([0., 0., 0., 0., 0., 1., 0., 0., 0., 0.], dtype=float32)], np.int64(5)]
+[42, [array([0., 0., 0., 0., 0., 0., 1., 0., 0., 0.], dtype=float32)], np.int64(6)]
+[49, [array([0., 0., 0., 1., 0., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(3)]
+[55, [array([0., 1., 0., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(1)]
+[58, [array([0., 0., 0., 0., 0., 0., 0., 0., 1., 0.], dtype=float32)], np.int64(8)]
+[61, [array([0., 0., 0., 0., 0., 0., 1., 0., 0., 0.], dtype=float32)], np.int64(6)]
+[63, [array([0., 0., 0., 0., 0., 0., 1., 0., 0., 0.], dtype=float32)], np.int64(6)]
+[65, [array([0., 0., 0., 0., 1., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(4)]
+[69, [array([0., 0., 0., 0., 0., 0., 0., 0., 0., 1.], dtype=float32)], np.int64(9)]
+[71, [array([0., 0., 0., 0., 0., 0., 0., 0., 1., 0.], dtype=float32)], np.int64(8)]
+[73, [array([0., 0., 0., 0., 0., 0., 0., 0., 1., 0.], dtype=float32)], np.int64(8)]
+[79, [array([0., 0., 1., 0., 0., 0., 0., 0., 0., 0.], dtype=float32)], np.int64(2)]
+Finished digits extraction
+[[0 9 0 0 0 0 0 5 0]
+ [1 0 6 0 0 0 3 0 7]
+ [0 4 0 0 5 0 0 1 0]
+ [0 0 0 0 4 0 0 0 0]
+ [0 0 7 8 0 5 6 0 0]
+ [0 0 0 0 3 0 0 0 0]
+ [0 1 0 0 8 0 0 6 0]
+ [6 0 4 0 0 0 9 0 8]
+ [0 8 0 0 0 0 0 2 0]]
+
+1 line representation:
+0, 9, 0, 0, 0, 0, 0, 5, 0, 1, 0, 6, 0, 0, 0, 3, 0, 7, 0, 4, 0, 0, 5, 0, 0, 1, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 7, 8, 0, 5, 6, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 1, 0, 0, 8, 0, 0, 6, 0, 6, 0, 4, 0, 0, 0, 9, 0, 8, 0, 8, 0, 0, 0, 0, 0, 2, 0
+
+Process finished with exit code 0

@@ -1,0 +1,23 @@
+# Sudoku Camera Application
+
+A desktop application that uses your computer's camera to capture Sudoku puzzles and solve them.
+
+## Installation
+
+1. Install the required dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+## Running the Application
+
+```bash
+python sudoku_camera_app.py
+```
+
+## How to Use
+
+1. **Start Camera**: Click the "Start Camera" button to activate your webcam
+2. **Position Puzzle**: Hold or place your Sudoku puzzle in front of the camera
+3. **Capture**: Click "Capture Image" when the puzzle is clearly visible
+4. **Solve**: Click "Solve Sudoku" to process and solve the puzzle
