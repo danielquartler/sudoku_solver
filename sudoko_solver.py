@@ -1,7 +1,6 @@
 # solve sudoko
 import numpy as np
 import copy
-import main
 
 
 def load_board( board_num ):

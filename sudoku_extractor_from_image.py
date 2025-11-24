@@ -347,37 +347,6 @@ def find_sudoku_corners(lines, img):
             cv2.circle(img_color, corner, 3, (0, 0, 255), 3)
         cv2.imwrite("thresh_boundaries0.png", img_color)
 
-
-
-    if False:
-        #  Merge similar lines (remove duplicates)
-        merged_x = merge_similar_lines(vertical, 'vertical', threshold=25)
-        merged_y = merge_similar_lines(horizontal, 'horizontal', threshold=25)
-
-        # Build line equations
-        vlines = [line_equation([x, 0, x, img_shape[0]]) for x in merged_x]
-        hlines = [line_equation([0, y, img_shape[1], y]) for y in merged_y]
-
-        # Compute intersections
-        intersections = []
-        for vl in vlines:
-            for hl in hlines:
-                p = intersection(vl, hl)
-                if p is not None:
-                    x, y = p
-                    if 0 <= x < img_shape[1] and 0 <= y < img_shape[0]:
-                        intersections.append(p)
-
-        intersections = np.array(intersections)
-        if len(intersections) < 4:
-            raise ValueError("Not enough intersection points found.")
-
-    if False:
-        # Find convex hull & approximate to 4 corners
-        hull = cv2.convexHull(intersections)
-        epsilon = 0.02 * cv2.arcLength(hull, True)
-        approx = cv2.approxPolyDP(hull, epsilon, True)
-
     return intersections.reshape(-1, 2)
 
 
@@ -428,106 +397,67 @@ class SudokuExtractor:
         if doDebugPlots:
             cv2.imwrite("thresh.png", thresh)
 
-        if False:  # option 1
-            img_shape = thresh.shape
+        # findContours:remember, object to be found should be white and background should be black.
+        # RETR_EXTERNAL= Retrieve only the outermost contours (ignores nested/inside contours).
+        # cv2.CHAIN_APPROX_SIMPLE: tells OpenCV how to store the contour points.  Stores only endpoints.
+        contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        if not contours:
+            return None
 
-            # Line Segment Detector (LSD)
-            lsd = cv2.createLineSegmentDetector()
-            lines, widths, precisions, nfas = lsd.detect(thresh)  # self.gray
+        # Find the largest contour
+        largest = max(contours, key=cv2.contourArea)
 
-            nLines = lines.shape[0]
-            line_len = np.zeros((nLines, 2))
-            for kL in range(nLines):
-                curLine = lines[kL]
-                line_len[kL, 0] = np.abs(curLine[0, 2] - curLine[0, 0])
-                line_len[kL, 1] = np.abs(curLine[0, 3] - curLine[0, 1])
-            i_hor = np.where(line_len[:, 0] > img_shape[1] / 2)[0]
-            i_ver = np.where(line_len[:, 1] > img_shape[0] / 2)[0]
+        # Approximate to a polygon
+        epsilon = 0.02 * cv2.arcLength(largest, True)
+        approx = cv2.approxPolyDP(largest, epsilon, True)
 
-            line_horizontal = lines[i_hor]
-            line_vertical = lines[i_ver]
-
-            # get bounding rectangle
-            approx = np.zeros((4, 1, 2), dtype="int32")
-            approx[0, 0, 0] = int(min(line_horizontal[:, 0, 0]))
-            approx[0, 0, 1] = int(min(line_horizontal[:, 0, 1]))
-            approx[2, 0, 0] = int(max(line_horizontal[:, 0, 0]))
-            approx[1, 0, 1] = int(max(line_horizontal[:, 0, 1]))
-
-            approx[1, 0, 0] = approx[0, 0, 0]
-            approx[3, 0, 1] = approx[0, 0, 1]
-            approx[3, 0, 0] = approx[2, 0, 0]
-            approx[2, 0, 1] = approx[1, 0, 1]
-            # approx = [[[10  3]],, [[10 385]],, [[389 385]],, [[389   3]]]
-            # approx = [[[10  4]],, [[12 386]],, [[392 384]],, [[392   4]]].  shape=[4,1,2]
-
+        # If we have 4 points, it's likely our grid
+        if len(approx) == 4:
             return approx.reshape(4, 2)
 
-        else:  # option 2
-            # findContours:remember, object to be found should be white and background should be black.
-            # RETR_EXTERNAL= Retrieve only the outermost contours (ignores nested/inside contours).
-            # cv2.CHAIN_APPROX_SIMPLE: tells OpenCV how to store the contour points.  Stores only endpoints.
-            contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-            if not contours:
-                return None
+        # Otherwise, get bounding rectangle
+        #x, y, w, h = cv2.boundingRect(largest)
 
-            # Find the largest contour
-            largest = max(contours, key=cv2.contourArea)
+        #thresh is 640x480 and not 400x400  I have to fix that
 
-            # Approximate to a polygon
-            epsilon = 0.02 * cv2.arcLength(largest, True)
-            approx = cv2.approxPolyDP(largest, epsilon, True)
+        # canny
+        edges = cv2.Canny(thresh, 100, 200)  # img, TH1, TH2
+        if doDebugPlots:
+            cv2.imwrite("thresh_Canny.png", edges)
+        # Hough: (image, distance resolution (typical 1), Angle resolution in radians, threshold, minLineLength [pixels], The maximum allowed gap between two points on the same line for them to be connected into a single line segment)
+        lines4 = None
+        min_line_len = 400
+        while lines4 is None:
+            #print(min_line_len)
+            lines4 = cv2.HoughLinesP(edges, 2, np.pi / 300, 200, minLineLength=min_line_len, maxLineGap=int(min_line_len/10))
+            min_line_len = int(min_line_len*0.7)
+        pts4 = np.concatenate([l.reshape(2, 2) for l in lines4])
+        nPts4 = len(pts4)
+        if doDebugPlots:
+            img_color = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
+            cv2.polylines(img_color, np.reshape(pts4, (nPts4, 1, 2)), True, (255, 0, 0), 25)
+            cv2.imwrite("thresh_based_HoughLinesP4.png", img_color)
 
-            # If we have 4 points, it's likely our grid
-            if len(approx) == 4:
-                return approx.reshape(4, 2)
+        corners4 = find_sudoku_corners(lines4, edges)
+        if corners4 is None:
+            # Find convex hull & approximate to 4 corners
+            hull = cv2.convexHull(np.reshape(lines4, (-1, 2)))
+            hull = cv2.convexHull(lines4)
+            epsilon = 0.02 * cv2.arcLength(hull, True)
+            approx = cv2.approxPolyDP(hull, epsilon, True)
 
-            # Otherwise, get bounding rectangle
-            #x, y, w, h = cv2.boundingRect(largest)
-
-            #thresh is 640x480 and not 400x400  I have to fix that
-
-            # canny
-            edges = cv2.Canny(thresh, 100, 200)  # img, TH1, TH2
             if doDebugPlots:
-                cv2.imwrite("thresh_Canny.png", edges)
-            # Hough: (image, distance resolution (typical 1), Angle resolution in radians, threshold, minLineLength [pixels], The maximum allowed gap between two points on the same line for them to be connected into a single line segment)
-            lines4 = None
-            min_line_len = 400
-            while lines4 is None:
-                #print(min_line_len)
-                lines4 = cv2.HoughLinesP(edges, 2, np.pi / 300, 200, minLineLength=min_line_len, maxLineGap=int(min_line_len/10))
-                min_line_len = int(min_line_len*0.7)
-            pts4 = np.concatenate([l.reshape(2, 2) for l in lines4])
-            nPts4 = len(pts4)
-            if doDebugPlots:
-                img_color = cv2.cvtColor(thresh, cv2.COLOR_GRAY2BGR)
-                cv2.polylines(img_color, np.reshape(pts4, (nPts4, 1, 2)), True, (255, 0, 0), 25)
-                cv2.imwrite("thresh_based_HoughLinesP4.png", img_color)
-
-            corners4 = find_sudoku_corners(lines4, edges)
-            if corners4 is None:
-                # Find convex hull & approximate to 4 corners
-                hull = cv2.convexHull(np.reshape(lines4, (-1, 2)))
-                hull = cv2.convexHull(lines4)
-                epsilon = 0.02 * cv2.arcLength(hull, True)
-                approx = cv2.approxPolyDP(hull, epsilon, True)
-
                 debug_image = self.img.copy()
                 corners4 = np.reshape(hull, (-1, 2))
                 for point in corners4:
                     cv2.circle(debug_image, np.astype(point, int), 3, (0, 0, 255), 2)  # blue
                 cv2.imwrite("thresh_with_hull.png", debug_image)
 
-
                 debug_image = self.img.copy()
                 corners4 = np.reshape(approx, (-1, 2))
                 for point in corners4:
                     cv2.circle(debug_image, np.astype(point, int), 3, (255, 0, 0), 2)  # blue
                 cv2.imwrite("thresh_with_bad_approx.png", debug_image)
-
-
-                xxx= 1
 
         return corners4
 
@@ -972,6 +902,8 @@ if __name__ == "__main__":
     #solve_sudoku_from_image("screenshots//sudoku_full_screenshot_3.png")
     #solve_sudoku_from_image("sudoku.png")
     #solve_sudoku_from_image("extracted_puzzle.png")
-    solve_sudoku_from_image("unit_test_data\sudoku4.png", False, False)
+    solve_sudoku_from_image("unit_test_data\sudoku4.png", True, True)
+    #solve_sudoku_from_image("unit_test_data\sudoku8.png", True, True)
+
 
     #solve_sudoku_from_image()
