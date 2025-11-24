@@ -5,7 +5,6 @@ from typing import List, Tuple, Optional
 from keras.models import load_model
 from PIL import Image, ImageDraw, ImageFont
 import sudoko_solver
-from scipy.optimize import minimize
 
 # configurations
 doDebugPlots = False
@@ -634,45 +633,6 @@ class SudokuExtractor:
             cv2.imwrite(r"warpPerspective_myHist_thresh_mean_19_8.png", thresh)
 
         self.grid = thresh
-        return
-        # old code:
-        # equalization phase 1
-        gray_p02, gray_p25, gray_p50, A = self.calc_gray_prctls()
-        y = np.array([0, 100, 250])
-
-        # Initial guess
-        x0 = np.array([60.0, 2.0, -700.0])
-        # Define objective function: least squares
-        def objective(params):
-            a, b, c = params
-            return np.sum((A @ params - y) ** 2)  # @ operator in Python is used for matrix multiplication.
-        bounds = [(0, None), (0, None), (None, 0)]  # constrains: a>0, b>0, c<0
-
-        result = minimize(objective, x0, bounds=bounds)
-        a, b, c = result.x
-        # apply a, b, c
-        img = a * np.sqrt(self.grid) + b * self.grid + c
-        self.grid = np.clip(img, a_min=0, a_max=255).astype('uint8')
-        if doDebugPlots:
-            cv2.imwrite("warpPerspective_myHist_phase1.png", self.grid)
-            thresh1 = cv2.adaptiveThreshold(self.grid, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 3)
-
-
-        rat_cum, gray_bins = self.calc_gray_hist()
-        gray_p70 = np.interp(70, rat_cum, gray_bins)
-        _, thresh2 = cv2.threshold(self.grid, gray_p70, 255, cv2.THRESH_BINARY_INV)
-        if doDebugPlots:
-            cv2.imwrite("warpPerspective_myHist_phase1b.png", thresh2)
-
-        # phase 2
-        gray_p02, gray_p25, gray_p50, A = self.calc_gray_prctls()
-        # Solve
-        a, b, c = np.linalg.solve(A, y)
-        print(f"a = {a}, b = {b}, c = {c}")
-        img = a * np.sqrt(self.grid) + b * self.grid + c
-        self.grid = np.clip(img, a_min=0, a_max=255).astype('uint8')
-        if doDebugPlots:
-            cv2.imwrite("warpPerspective_myHist_phase2.png", self.grid)
 
 
     # Extract individual cells from the warped grid.  self.grid => self.cells
